@@ -45,28 +45,27 @@ var model = undefined;
 
 
 async function initialize() {
-    model = await tf.loadLayersModel('/weights/catsvsdogs/model.json');
+    model = await tf.loadLayersModel('/model/model.json');
 }
 
 async function predict() {
   // action for the submit button
   if (!imageDisplay.src || !imageDisplay.src.startsWith("data")) {
-    window.alert("Please select an image before submit.");
+    window.alert("Selectionnez une image avant de commencer.");
     return;
   }
 
-  let tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([150, 150]).toFloat().expandDims();
+  emotions = ["En colère", "Heureux", "Neutre", "Effrayé"]
+
+  let tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([48, 48]).toFloat().expandDims(0);
   prediction = await model.predict(tensorImg).data();
-
-  if (prediction[0] === 0) {
-      predResult.innerHTML = "I think it's a cat";
-
-  } else if (prediction[0] === 1) {
-      predResult.innerHTML = "I think it's a dog";
-
-  } else {
-      predResult.innerHTML = "This is Something else";
+  console.log(prediction)
+  console.log(prediction.reduce((a, b) => a + b, 0))
+  for(let i = 0 ; i < 4; i++){
+    predResult.innerHTML += "<br/>" + emotions[i] + " : " + prediction[i].toPrecision(4) * 100 + "% de chances"
   }
+
+
   show(predResult)
 
 }
