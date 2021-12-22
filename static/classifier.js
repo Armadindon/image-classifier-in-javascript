@@ -65,8 +65,9 @@ async function predict() {
 
   predResult.innerHTML = ""
 
-  emotions = ["En colère", "Heureux", "Neutre", "Effrayé"]
+  emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
+  console.log(tf.browser.fromPixels)
 
   let tensorImg;
   //On utilise la webcam par défaut
@@ -75,17 +76,15 @@ async function predict() {
       resizeWidth: 48,
       resizeHeight: 48,
     })
-    tensorImg = await webcam.capture();
-    tensorImg = tf.expandDims(tensorImg, axis=0);
+    tensorImg = (await webcam.capture()).mean(2).expandDims(-1).expandDims(0);
   } else{
     //Sinon l'image utilisé
-    tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([48, 48]).toFloat().expandDims(0);
+    tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([48, 48], 1).toFloat().expandDims(0);
   }
 
   prediction = await model.predict(tensorImg).data();
-
   
-  for(let i = 0 ; i < 4; i++){
+  for(let i = 0 ; i < emotions.length; i++){
     predResult.innerHTML += "<br/>" + emotions[i] + " : " + prediction[i].toPrecision(4) * 100 + "% de chances"
   }
 
