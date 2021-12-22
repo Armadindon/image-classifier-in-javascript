@@ -29,6 +29,16 @@ function fileSelectHandler(e) {
 }
 
 //========================================================================
+// Webcam handling
+//========================================================================
+var webcamPlayer = document.getElementById("webcam");
+var webcamAvailable = false;
+
+navigator.mediaDevices.getUserMedia({video: true}).then((stream) =>{
+  webcamPlayer.srcObject = stream;
+  webcamAvailable = true;
+} )
+//========================================================================
 // Web page elements for functions to use
 //========================================================================
 
@@ -42,25 +52,39 @@ var model = undefined;
 //========================================================================
 // Main button events
 //========================================================================
-
-
 async function initialize() {
     model = await tf.loadLayersModel('/model/model.json');
 }
 
 async function predict() {
   // action for the submit button
-  if (!imageDisplay.src || !imageDisplay.src.startsWith("data")) {
-    window.alert("Selectionnez une image avant de commencer.");
+  if (!imageDisplay.src && !imageDisplay.src.startsWith("data") && !webcamAvailable) {
+    window.alert("Selectionnez une image avant de commencer. ou activez votre caméra");
     return;
   }
 
+  predResult.innerHTML = ""
+
   emotions = ["En colère", "Heureux", "Neutre", "Effrayé"]
 
-  let tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([48, 48]).toFloat().expandDims(0);
+
+  let tensorImg;
+  //On utilise la webcam par défaut
+  if(webcamAvailable){
+    const webcam = await tf.data.webcam(webcamPlayer, {
+      resizeWidth: 48,
+      resizeHeight: 48,
+    })
+    tensorImg = await webcam.capture();
+    tensorImg = tf.expandDims(tensorImg, axis=0);
+  } else{
+    //Sinon l'image utilisé
+    tensorImg = tf.browser.fromPixels(imagePreview).resizeNearestNeighbor([48, 48]).toFloat().expandDims(0);
+  }
+
   prediction = await model.predict(tensorImg).data();
-  console.log(prediction)
-  console.log(prediction.reduce((a, b) => a + b, 0))
+
+  
   for(let i = 0 ; i < 4; i++){
     predResult.innerHTML += "<br/>" + emotions[i] + " : " + prediction[i].toPrecision(4) * 100 + "% de chances"
   }
