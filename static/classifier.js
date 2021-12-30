@@ -67,8 +67,6 @@ async function predict() {
 
   emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
-  console.log(tf.browser.fromPixels)
-
   let tensorImg;
   //On utilise la webcam par défaut
   if(webcamAvailable){
@@ -107,6 +105,7 @@ function clearImage() {
   hide(loader);
   hide(predResult);
   show(uploadCaption);
+  show(webcamPlayer)
 
   imageDisplay.classList.remove("loading");
 }
@@ -129,6 +128,7 @@ function previewFile(file) {
 
     displayImage(reader.result, "image-display");
   };
+  hide(webcamPlayer)
 }
 
 //========================================================================
